@@ -42,7 +42,12 @@ public final class KafkaWebClient {
             WEBAPP_PATH = Files.createTempDirectory("KafkaWebsocket").toFile().getAbsolutePath();
             copyWebappResources(
                     WEBAPP_PATH,
+                    "bootstrap.min.css",
+                    "bootstrap.min.js",
+                    "bootstrap-theme.min.css",
                     "index.html",
+                    "jquery.min.js",
+                    "knockout-min.js",
                     "styles.css",
                     "web.xml");
         }
