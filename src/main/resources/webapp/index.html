@@ -91,10 +91,13 @@
                     self.producerWebSocket.onerror = function(error) {
                        console.log('WebSocket Error ' + error.data);
                     };
+
+                    return self.producerWebSocket
                 }
 
                 self.clickSend = function() {
-                    alert(self.websocket);
+                    self.producerWebSocket.send(self.producerTopic() + ';' + self.quote())
+                    self.producerWebSocket.send(self.producerTopic() + ';' + self.quote())
                 }
             }
 
