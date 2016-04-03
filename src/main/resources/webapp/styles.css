@@ -5,6 +5,30 @@
     background: #ECECEC;
     float: left;
     width: 48%;
-    height: 500px;
+    height: 100%;
     align: center;
+}
+.producer-messages-table {
+    table-layout: fixed;
+    margin:40px auto 0px auto;
+}
+.producer-messages, td, th {
+    border-collapse:collapse;
+    border:1px solid #777;
+}
+th {
+    padding:20px 7px;
+    font-size:15px;
+    color:#444;
+    background:#66C2E0;
+}
+td {
+    padding:5px 10px;
+    height:35px;
+}
+.producer-messages-outter {
+    overflow-x: scroll;
+}
+th, td {
+    min-width: 200px;
 }

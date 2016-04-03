@@ -40,6 +40,24 @@
                     </div>
                 </div>
             </form>
+            <div class="tab-pane producer-messages-outter" id="producerMessages" data-bind="visible: showProducerMessages">
+                <table class="table-striped producer-messages">
+                    <tr><td><b>Time</b></td><td><b>Topic</b></td><td><b>Quote</b></td></tr>
+                    <!-- ko foreach: producerMessages -->
+                    <tr>
+                        <td>
+                            <p data-bind="text: time"></p>
+                        </td>
+                        <td>
+                            <p data-bind="text: topic"></p>
+                        </td>
+                        <td>
+                            <p data-bind="text: quote"></p>
+                        </td>
+                    </tr>
+                    <!-- /ko -->
+                </table>
+            </div>
         </div>
 
         <div id="consumer" class="kafka">
@@ -64,44 +82,60 @@
 
     <script type="text/javascript">
 
-            function ViewModel() {
-                var self = this;
-                self.producerTopic = ko.observable("");
-                self.quote = ko.observable("");
-                self.producerWebSocket = initWebSocket("ws://localhost:7080/kafka/producer");
+        Date.prototype.today = function () {
+            return ((this.getDate() < 10)?"0":"") + this.getDate() +"/"+(((this.getMonth()+1) < 10)?"0":"") + (this.getMonth()+1) +"/"+ this.getFullYear();
+        }
 
-                function initWebSocket(url) {
-                    if ('WebSocket' in window) {
-                        self.producerWebSocket = new WebSocket(url);
-                    } else if ('MozWebSocket' in window) {
-                        self.producerWebSocket = new MozWebSocket(self.webUrl);
-                    } else {
-                        alert('WebSocket is not supported by this browser.');
-                        return;
-                    }
+        Date.prototype.timeNow = function () {
+            return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds() + "." + ((this.getMilliseconds() < 10)?"00":((this.getMilliseconds() < 100)?"0":"")) + this.getMilliseconds();
+        }
 
-                    self.producerWebSocket.onopen = function(event) {
-                        console.log('Connected to server.');
-                    };
+        function ViewModel() {
+            var self = this;
+            self.producerTopic = ko.observable("");
+            self.quote = ko.observable("");
+            self.producerWebSocket = initWebSocket("ws://localhost:7080/kafka/producer");
+            self.producerMessages = ko.observableArray();
+            self.showProducerMessages  = ko.observable(false);
 
-                    self.producerWebSocket.onclose = function() {
-                       console.log('Disconnected from server');
-                    };
-
-                    self.producerWebSocket.onerror = function(error) {
-                       console.log('WebSocket Error ' + error.data);
-                    };
-
-                    return self.producerWebSocket
+            function initWebSocket(url) {
+                if ('WebSocket' in window) {
+                    self.producerWebSocket = new WebSocket(url);
+                } else if ('MozWebSocket' in window) {
+                    self.producerWebSocket = new MozWebSocket(self.webUrl);
+                } else {
+                    alert('WebSocket is not supported by this browser.');
+                    return;
                 }
 
-                self.clickSend = function() {
-                    self.producerWebSocket.send(self.producerTopic() + ';' + self.quote())
-                    self.producerWebSocket.send(self.producerTopic() + ';' + self.quote())
-                }
+                self.producerWebSocket.onopen = function(event) {
+                    console.log('Connected to server.');
+                };
+
+                self.producerWebSocket.onclose = function() {
+                   console.log('Disconnected from server');
+                };
+
+                self.producerWebSocket.onerror = function(error) {
+                   console.log('WebSocket Error ' + error.data);
+                };
+
+                return self.producerWebSocket
             }
 
-            ko.applyBindings(new ViewModel());
+            self.clickSend = function() {
+                var date = new Date();
+                self.producerMessages.unshift({
+                    time: ko.observable(date.today() + " @ " + date.timeNow()),
+                    topic: ko.observable(self.producerTopic()),
+                    quote: ko.observable(self.quote()),
+                });
+                self.showProducerMessages(true);
+                self.producerWebSocket.send(self.producerTopic() + ';' + self.quote())
+            }
+        }
+
+        ko.applyBindings(new ViewModel());
 
     </script>
 </body>
