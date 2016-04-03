@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hot-Leads - DEMO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-min.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Hot-Leads - DEMO</a>
+        </div>
+    </nav>
+
+    <div id="main" class="width: 100%">
+
+        <div id="producer" class="kafka">
+            <form class="form-horizontal">
+                <div><font size="5">Producer</font></div>
+                <div class="form-group">
+                    <label for="inputProducerTopic" class="control-label col-xs-2">Topic</label>
+                    <div class="col-xs-5">
+                        <input class="form-control" id="inputProducerTopic" placeholder="Topic" data-bind="value: producerTopic">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputQuote" class="control-label col-xs-2">Quote</label>
+                    <div class="col-xs-10">
+                        <input class="form-control" id="inputQuote" placeholder="Quote" data-bind="value: quote">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-offset-2 col-xs-10">
+                        <button type="submit" class="btn btn-primary" data-bind="click: clickSend">Send</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div id="consumer" class="kafka">
+            <div><font size="5">Consumer</font></div>
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label for="inputConsumerTopic" class="control-label col-xs-2">Topic</label>
+                    <div class="col-xs-5">
+                        <input class="form-control" id="inputConsumerTopic" placeholder="Topic" data-bind="value: consumerTopic">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-offset-2 col-xs-10">
+                        <button type="submit" class="btn btn-primary" data-bind="click: clickListen">Listen</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div style="clear:both"></div>
+
+    <script type="text/javascript">
+
+            function ViewModel() {
+                var self = this;
+                self.producerTopic = ko.observable("");
+                self.quote = ko.observable("");
+                self.producerWebSocket = initWebSocket("ws://localhost:7080/kafka/producer");
+
+                function initWebSocket(url) {
+                    if ('WebSocket' in window) {
+                        self.producerWebSocket = new WebSocket(url);
+                    } else if ('MozWebSocket' in window) {
+                        self.producerWebSocket = new MozWebSocket(self.webUrl);
+                    } else {
+                        alert('WebSocket is not supported by this browser.');
+                        return;
+                    }
+
+                    self.producerWebSocket.onopen = function(event) {
+                        console.log('Connected to server.');
+                    };
+
+                    self.producerWebSocket.onclose = function() {
+                       console.log('Disconnected from server');
+                    };
+
+                    self.producerWebSocket.onerror = function(error) {
+                       console.log('WebSocket Error ' + error.data);
+                    };
+                }
+
+                self.clickSend = function() {
+                    alert(self.websocket);
+                }
+            }
+
+            ko.applyBindings(new ViewModel());
+
+    </script>
+</body>
+</html>

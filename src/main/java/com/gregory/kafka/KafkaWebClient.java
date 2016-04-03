@@ -1,0 +1,69 @@
+package com.gregory.kafka;
+
+import org.apache.catalina.connector.Connector;
+import org.apache.catalina.startup.Tomcat;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+public final class KafkaWebClient {
+
+    private static final int PORT = 7080;
+    private static String WEBAPP_PATH;
+
+    private KafkaWebClient() {
+    }
+
+    public static void main(String[] args) throws Exception {
+        Tomcat tomcat = new Tomcat();
+        tomcat.setConnector(httpConnector());
+        tomcat.getService().addConnector(tomcat.getConnector());
+
+        tomcat.addWebapp("", webappPath());
+
+        tomcat.start();
+        tomcat.getServer().await();
+    }
+
+    private static Connector httpConnector() throws Exception {
+        Connector connector = new Connector("HTTP/1.1");
+        connector.setPort(PORT);
+        connector.setSecure(false);
+        connector.setScheme("http");
+        return connector;
+    }
+
+    private static String webappPath() throws IOException {
+        if(WEBAPP_PATH == null) {
+            WEBAPP_PATH = Files.createTempDirectory("KafkaWebsocket").toFile().getAbsolutePath();
+            copyWebappResources(
+                    WEBAPP_PATH,
+                    "index.html",
+                    "styles.css",
+                    "web.xml");
+        }
+        return WEBAPP_PATH;
+    }
+
+    private static void copyWebappResources(String webapp, String... resources) throws IOException {
+        for (String resource : resources) {
+            copyWebappResource(webapp, resource);
+        }
+    }
+
+    private static void copyWebappResource(String webapp, String resource) throws IOException {
+        IOUtils.copy(
+                resourceStream(resource),
+                new FileOutputStream(Paths.get(webapp, resource).toFile()));
+    }
+
+    private static InputStream resourceStream(String resource) {
+        String path = "/webapp/" + resource;
+        return KafkaWebClient.class.getResourceAsStream(path);
+    }
+
+}
