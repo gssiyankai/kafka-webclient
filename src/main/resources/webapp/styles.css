@@ -8,11 +8,11 @@
     height: 100%;
     align: center;
 }
-.producer-messages-table {
+.messages-table {
     table-layout: fixed;
     margin:40px auto 0px auto;
 }
-.producer-messages, td, th {
+.messages, td, th {
     border-collapse:collapse;
     border:1px solid #777;
 }
@@ -26,7 +26,7 @@ td {
     padding:5px 10px;
     height:35px;
 }
-.producer-messages-outter {
+.messages-outter {
     overflow-x: scroll;
 }
 th, td {

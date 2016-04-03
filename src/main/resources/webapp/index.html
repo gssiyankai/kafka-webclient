@@ -40,8 +40,8 @@
                     </div>
                 </div>
             </form>
-            <div class="tab-pane producer-messages-outter" id="producerMessages" data-bind="visible: showProducerMessages">
-                <table class="table-striped producer-messages">
+            <div class="tab-pane messages-outter" id="producerMessages" data-bind="visible: showProducerMessages">
+                <table class="table-striped messages">
                     <tr><td><b>Time</b></td><td><b>Topic</b></td><td><b>Quote</b></td></tr>
                     <!-- ko foreach: producerMessages -->
                     <tr>
@@ -75,6 +75,21 @@
                     </div>
                 </div>
             </form>
+            <div class="tab-pane messages-outter" id="consumerMessages" data-bind="visible: showConsumerMessages">
+                <table class="table-striped messages">
+                    <tr><td><b>Time</b></td><td><b>Message</b></td></tr>
+                    <!-- ko foreach: consumerMessages -->
+                    <tr>
+                        <td>
+                            <p data-bind="text: time"></p>
+                        </td>
+                        <td>
+                            <p data-bind="text: message"></p>
+                        </td>
+                    </tr>
+                    <!-- /ko -->
+                </table>
+            </div>
         </div>
     </div>
 
@@ -97,30 +112,43 @@
             self.producerWebSocket = initWebSocket("ws://localhost:7080/kafka/producer");
             self.producerMessages = ko.observableArray();
             self.showProducerMessages  = ko.observable(false);
+            self.consumerTopic = ko.observable("");
+            self.consumerWebSocket = initWebSocket("ws://localhost:7080/kafka/consumer");
+            self.consumerWebSocket.onmessage = function(event) {
+                var date = new Date();
+                self.consumerMessages.unshift({
+                    time: ko.observable(date.today() + " @ " + date.timeNow()),
+                    message: ko.observable(event.data)
+                });
+                self.showConsumerMessages(true);
+            }
+            self.consumerMessages = ko.observableArray();
+            self.showConsumerMessages = ko.observable(false);
 
             function initWebSocket(url) {
+                var websocket;
                 if ('WebSocket' in window) {
-                    self.producerWebSocket = new WebSocket(url);
+                    websocket = new WebSocket(url);
                 } else if ('MozWebSocket' in window) {
-                    self.producerWebSocket = new MozWebSocket(self.webUrl);
+                    websocket = new MozWebSocket(self.webUrl);
                 } else {
                     alert('WebSocket is not supported by this browser.');
                     return;
                 }
 
-                self.producerWebSocket.onopen = function(event) {
+                websocket.onopen = function(event) {
                     console.log('Connected to server.');
                 };
 
-                self.producerWebSocket.onclose = function() {
+                websocket.onclose = function() {
                    console.log('Disconnected from server');
                 };
 
-                self.producerWebSocket.onerror = function(error) {
+                websocket.onerror = function(error) {
                    console.log('WebSocket Error ' + error.data);
                 };
 
-                return self.producerWebSocket
+                return websocket
             }
 
             self.clickSend = function() {
@@ -128,10 +156,14 @@
                 self.producerMessages.unshift({
                     time: ko.observable(date.today() + " @ " + date.timeNow()),
                     topic: ko.observable(self.producerTopic()),
-                    quote: ko.observable(self.quote()),
+                    quote: ko.observable(self.quote())
                 });
                 self.showProducerMessages(true);
                 self.producerWebSocket.send(self.producerTopic() + ';' + self.quote())
+            }
+
+            self.clickListen = function() {
+                self.consumerWebSocket.send(self.consumerTopic())
             }
         }
 
