@@ -34,10 +34,9 @@ public final class KafKaProducerEndpoint {
     @OnMessage
     public void incoming(String message) throws Exception {
         System.out.println(message);
-        String[] split = message.split(";");
-        String topic = split[0];
-        String quote = split[1];
-        KafkaProducer producer = new KafkaProducer(producerProperties, new StringSerializer(), new ByteArraySerializer());
+        String topic = message.substring(0, message.indexOf(';'));
+        String quote = message.substring(message.indexOf(';')+1);
+        KafkaProducer<String, byte[]> producer = new KafkaProducer<>(producerProperties, new StringSerializer(), new ByteArraySerializer());
         final ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, quote.getBytes());
         producer.send(record);
     }
