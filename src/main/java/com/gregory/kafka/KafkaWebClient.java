@@ -13,7 +13,6 @@ import java.nio.file.Paths;
 public final class KafkaWebClient {
 
     private static final int PORT = 7080;
-    private static String WEBAPP_PATH;
 
     private KafkaWebClient() {
     }
@@ -38,20 +37,18 @@ public final class KafkaWebClient {
     }
 
     private static String webappPath() throws IOException {
-        if(WEBAPP_PATH == null) {
-            WEBAPP_PATH = Files.createTempDirectory("KafkaWebsocket").toFile().getAbsolutePath();
-            copyWebappResources(
-                    WEBAPP_PATH,
-                    "bootstrap.min.css",
-                    "bootstrap.min.js",
-                    "bootstrap-theme.min.css",
-                    "index.html",
-                    "jquery.min.js",
-                    "knockout-min.js",
-                    "styles.css",
-                    "web.xml");
-        }
-        return WEBAPP_PATH;
+        String webappPath = Files.createTempDirectory("KafkaWebsocket").toFile().getAbsolutePath();
+        copyWebappResources(
+                webappPath,
+                "bootstrap.min.css",
+                "bootstrap.min.js",
+                "bootstrap-theme.min.css",
+                "index.html",
+                "jquery.min.js",
+                "knockout-min.js",
+                "styles.css",
+                "web.xml");
+        return webappPath;
     }
 
     private static void copyWebappResources(String webapp, String... resources) throws IOException {
