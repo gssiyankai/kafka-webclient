@@ -17,83 +17,93 @@
         </div>
     </nav>
 
-    <div id="main" class="width: 100%">
+    <div id="main" class="height: 100%">
 
-        <div id="producer" class="kafka">
-            <form class="form-horizontal">
-                <div><font size="5">Producer</font></div>
-                <div class="form-group">
-                    <label for="inputProducerTopic" class="control-label col-xs-2">Topic</label>
-                    <div class="col-xs-5">
-                        <input class="form-control" id="inputProducerTopic" placeholder="Topic" data-bind="value: producerTopic">
+        <div id="configuration" class="configuration">
+            <div id="producer" class="producer">
+                <form class="form-horizontal">
+                    <div><font size="5">Producer</font></div>
+                    <div class="form-group">
+                        <label for="inputProducerTopic" class="control-label col-xs-2">Topic</label>
+                        <div class="col-xs-5">
+                            <input class="form-control" id="inputProducerTopic" placeholder="Topic" data-bind="value: producerTopic">
+                        </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="inputQuote" class="control-label col-xs-2">Quote</label>
-                    <div class="col-xs-10">
-                        <input class="form-control" id="inputQuote" placeholder="Quote" data-bind="value: quote">
+                    <div class="form-group">
+                        <label for="inputQuote" class="control-label col-xs-2">Quote</label>
+                        <div class="col-xs-10">
+                            <input class="form-control" id="inputQuote" placeholder="Quote" data-bind="value: quote">
+                        </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-xs-offset-2 col-xs-10">
-                        <button type="submit" class="btn btn-primary" data-bind="click: clickSend">Send</button>
+                    <div class="form-group">
+                        <div class="col-xs-offset-2 col-xs-10">
+                            <button type="submit" class="btn btn-primary" data-bind="click: clickSend">Send</button>
+                        </div>
                     </div>
-                </div>
-            </form>
-            <div class="tab-pane messages-outter" id="producerMessages" data-bind="visible: showProducerMessages">
-                <table class="table-striped messages">
-                    <tr><td><b>Time</b></td><td><b>Topic</b></td><td><b>Quote</b></td></tr>
-                    <!-- ko foreach: producerMessages -->
+                </form>
+            </div>
+
+            <div id="consumer" class="consumer">
+                <div><font size="5">Consumer</font></div>
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label for="inputConsumerTopic" class="control-label col-xs-2">Topic</label>
+                        <div class="col-xs-5">
+                            <input class="form-control" id="inputConsumerTopic" placeholder="Topic" data-bind="value: consumerTopic">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-xs-offset-2 col-xs-10">
+                            <button type="submit" class="btn btn-primary" data-bind="click: clickListen">Listen</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="logs" class="logs" data-bind="visible: showMessages">
+            <div><font size="5">Logs</font></div>
+            <div class="tab-pane messages-outter" id="messages">
+                <table class="table-striped messages-table">
+                    <tr><td><b>Sent time</b></td><td><b>Producer topic</b></td><td><b>Quote</b></td><td><b>Received time</b></td><td><b>Score</b></td></tr>
+                    <!-- ko foreach: messages -->
                     <tr>
                         <td>
-                            <p data-bind="text: time"></p>
+                            <p data-bind="text: sentTime"></p>
                         </td>
                         <td>
-                            <p data-bind="text: topic"></p>
+                            <p data-bind="text: producerTopic"></p>
                         </td>
                         <td>
                             <p data-bind="text: quote"></p>
                         </td>
+                        <td>
+                            <div class="progress" data-bind="visible: pending">
+                                <div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" style="width: 100%">
+                                    <span class="sr-only">100% Complete</span>
+                                </div>
+                            </div>
+                            <div class="progress" data-bind="visible: received">
+                                <p data-bind="text: receivedTime"></p>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="progress" data-bind="visible: pending">
+                                <div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" style="width: 100%">
+                                    <span class="sr-only">100% Complete</span>
+                                </div>
+                            </div>
+                            <div class="progress" data-bind="visible: received">
+                                <p data-bind="text: score"></p>
+                            </div>
+                        </td>
                     </tr>
                     <!-- /ko -->
                 </table>
             </div>
         </div>
 
-        <div id="consumer" class="kafka">
-            <div><font size="5">Consumer</font></div>
-            <form class="form-horizontal">
-                <div class="form-group">
-                    <label for="inputConsumerTopic" class="control-label col-xs-2">Topic</label>
-                    <div class="col-xs-5">
-                        <input class="form-control" id="inputConsumerTopic" placeholder="Topic" data-bind="value: consumerTopic">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-xs-offset-2 col-xs-10">
-                        <button type="submit" class="btn btn-primary" data-bind="click: clickListen">Listen</button>
-                    </div>
-                </div>
-            </form>
-            <div class="tab-pane messages-outter" id="consumerMessages" data-bind="visible: showConsumerMessages">
-                <table class="table-striped messages">
-                    <tr><td><b>Time</b></td><td><b>Message</b></td></tr>
-                    <!-- ko foreach: consumerMessages -->
-                    <tr>
-                        <td>
-                            <p data-bind="text: time"></p>
-                        </td>
-                        <td>
-                            <p data-bind="text: message"></p>
-                        </td>
-                    </tr>
-                    <!-- /ko -->
-                </table>
-            </div>
-        </div>
     </div>
-
-    <div style="clear:both"></div>
 
     <script type="text/javascript">
 
@@ -110,20 +120,18 @@
             self.producerTopic = ko.observable("");
             self.quote = ko.observable("");
             self.producerWebSocket = initWebSocket("ws://localhost:7080/kafka/producer");
-            self.producerMessages = ko.observableArray();
-            self.showProducerMessages  = ko.observable(false);
             self.consumerTopic = ko.observable("");
             self.consumerWebSocket = initWebSocket("ws://localhost:7080/kafka/consumer");
             self.consumerWebSocket.onmessage = function(event) {
                 var date = new Date();
-                self.consumerMessages.unshift({
-                    time: ko.observable(date.today() + " @ " + date.timeNow()),
+                self.messages[0].unshift({
+                    receivedTime: ko.observable(date.today() + " @ " + date.timeNow()),
                     message: ko.observable(event.data)
                 });
                 self.showConsumerMessages(true);
             }
-            self.consumerMessages = ko.observableArray();
-            self.showConsumerMessages = ko.observable(false);
+            self.messages = ko.observableArray();
+            self.showMessages = ko.observable(false);
 
             function initWebSocket(url) {
                 var websocket;
@@ -153,12 +161,16 @@
 
             self.clickSend = function() {
                 var date = new Date();
-                self.producerMessages.unshift({
-                    time: ko.observable(date.today() + " @ " + date.timeNow()),
-                    topic: ko.observable(self.producerTopic()),
-                    quote: ko.observable(self.quote())
+                self.messages.unshift({
+                    sentTime: ko.observable(date.today() + " @ " + date.timeNow()),
+                    producerTopic: ko.observable(self.producerTopic()),
+                    quote: ko.observable(self.quote()),
+                    pending: ko.observable(true),
+                    received: ko.observable(false),
+                    receivedTime: ko.observable(""),
+                    score: ko.observable("")
                 });
-                self.showProducerMessages(true);
+                self.showMessages(true);
                 self.producerWebSocket.send(self.producerTopic() + ';' + self.quote())
             }
 
