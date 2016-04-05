@@ -78,7 +78,7 @@
                                     <span class="sr-only">100% Complete</span>
                                 </div>
                             </div>
-                            <div class="progress" data-bind="visible: received">
+                            <div data-bind="visible: received">
                                 <p data-bind="text: receivedTime"></p>
                             </div>
                         </td>
@@ -88,7 +88,7 @@
                                     <span class="sr-only">100% Complete</span>
                                 </div>
                             </div>
-                            <div class="progress" data-bind="visible: received">
+                            <div data-bind="visible: received">
                                 <p data-bind="text: score"></p>
                             </div>
                         </td>
@@ -103,7 +103,7 @@
     <script type="text/javascript">
 
         Date.prototype.today = function () {
-            return ((this.getDate() < 10)?"0":"") + this.getDate() +"/"+(((this.getMonth()+1) < 10)?"0":"") + (this.getMonth()+1) +"/"+ this.getFullYear();
+            return ((this.getDate() < 10)?"0":"") + this.getDate() +"/"+ (((this.getMonth()+1) < 10)?"0":"") + (this.getMonth()+1) +"/"+ this.getFullYear();
         }
 
         Date.prototype.timeNow = function () {
