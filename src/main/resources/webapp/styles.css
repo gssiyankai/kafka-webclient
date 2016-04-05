@@ -1,6 +1,6 @@
-.kafka {
+.producer, .consumer {
     padding:10px;
-    margin:0 10px;
+    margin:10px 10px;
     border-radius: 15px 50px;
     background: #ECECEC;
     float: left;
@@ -8,19 +8,23 @@
     height: 100%;
     align: center;
 }
+.logs {
+    padding:10px;
+    margin:10px 10px;
+    border-radius: 15px 50px;
+    background: #ECECEC;
+    float: left;
+    width: 97%;
+    height: 100%;
+    align: center;
+}
 .messages-table {
     table-layout: fixed;
     margin:40px auto 0px auto;
 }
-.messages, td, th {
+.messages-table, td, th {
     border-collapse:collapse;
     border:1px solid #777;
-}
-th {
-    padding:20px 7px;
-    font-size:15px;
-    color:#444;
-    background:#66C2E0;
 }
 td {
     padding:5px 10px;
