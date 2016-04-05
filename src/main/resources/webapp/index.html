@@ -17,62 +17,57 @@
         </div>
     </nav>
 
-    <div id="main" class="height: 100%">
+    <div id="main">
 
-        <div id="configuration" class="configuration">
-            <div id="producer" class="producer">
-                <form class="form-horizontal">
-                    <div><font size="5">Producer</font></div>
-                    <div class="form-group">
-                        <label for="inputProducerTopic" class="control-label col-xs-2">Topic</label>
-                        <div class="col-xs-5">
-                            <input class="form-control" id="inputProducerTopic" placeholder="Topic" data-bind="value: producerTopic">
-                        </div>
+        <div id="producer" class="producer">
+            <form class="form-horizontal">
+                <div><font size="5">Producer</font></div>
+                <div class="form-group">
+                    <label for="inputProducerTopic" class="control-label col-xs-2">Topic</label>
+                    <div class="col-xs-5">
+                        <input class="form-control" id="inputProducerTopic" placeholder="Topic" data-bind="value: producerTopic">
                     </div>
-                    <div class="form-group">
-                        <label for="inputQuote" class="control-label col-xs-2">Quote</label>
-                        <div class="col-xs-10">
-                            <input class="form-control" id="inputQuote" placeholder="Quote" data-bind="value: quote">
-                        </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputQuote" class="control-label col-xs-2">Quote</label>
+                    <div class="col-xs-10">
+                        <input class="form-control" id="inputQuote" placeholder="Quote" data-bind="value: quote">
                     </div>
-                    <div class="form-group">
-                        <div class="col-xs-offset-2 col-xs-10">
-                            <button type="submit" class="btn btn-primary" data-bind="click: clickSend">Send</button>
-                        </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-offset-2 col-xs-10">
+                        <button type="submit" class="btn btn-primary" data-bind="click: clickSend">Send</button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
+        </div>
 
-            <div id="consumer" class="consumer">
-                <div><font size="5">Consumer</font></div>
-                <form class="form-horizontal">
-                    <div class="form-group">
-                        <label for="inputConsumerTopic" class="control-label col-xs-2">Topic</label>
-                        <div class="col-xs-5">
-                            <input class="form-control" id="inputConsumerTopic" placeholder="Topic" data-bind="value: consumerTopic">
-                        </div>
+        <div id="consumer" class="consumer">
+            <div><font size="5">Consumer</font></div>
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label for="inputConsumerTopic" class="control-label col-xs-2">Topic</label>
+                    <div class="col-xs-5">
+                        <input class="form-control" id="inputConsumerTopic" placeholder="Topic" data-bind="value: consumerTopic">
                     </div>
-                    <div class="form-group">
-                        <div class="col-xs-offset-2 col-xs-10">
-                            <button type="submit" class="btn btn-primary" data-bind="click: clickListen">Listen</button>
-                        </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-xs-offset-2 col-xs-10">
+                        <button type="submit" class="btn btn-primary" data-bind="click: clickListen">Listen</button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
 
         <div id="logs" class="logs" data-bind="visible: showMessages">
             <div><font size="5">Logs</font></div>
             <div class="tab-pane messages-outter" id="messages">
                 <table class="table-striped messages-table">
-                    <tr><td><b>Sent time</b></td><td><b>Producer topic</b></td><td><b>Quote</b></td><td><b>Received time</b></td><td><b>Score</b></td></tr>
+                    <tr><td><b>Sent time</b></td><td><b>Quote</b></td><td><b>Received time</b></td><td><b>Score</b></td></tr>
                     <!-- ko foreach: messages -->
                     <tr>
                         <td>
                             <p data-bind="text: sentTime"></p>
-                        </td>
-                        <td>
-                            <p data-bind="text: producerTopic"></p>
                         </td>
                         <td>
                             <p data-bind="text: quote"></p>
@@ -115,20 +110,30 @@
             return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds() + "." + ((this.getMilliseconds() < 10)?"00":((this.getMilliseconds() < 100)?"0":"")) + this.getMilliseconds();
         }
 
+        Date.prototype.currentDateAndTime = function () {
+            return this.today() + " @ " + this.timeNow();
+        }
+
         function ViewModel() {
             var self = this;
-            self.producerTopic = ko.observable("");
-            self.quote = ko.observable("");
+            self.producerTopic = ko.observable();
+            self.quote = ko.observable();
             self.producerWebSocket = initWebSocket("ws://localhost:7080/kafka/producer");
-            self.consumerTopic = ko.observable("");
+            self.consumerTopic = ko.observable();
             self.consumerWebSocket = initWebSocket("ws://localhost:7080/kafka/consumer");
             self.consumerWebSocket.onmessage = function(event) {
-                var date = new Date();
-                self.messages[0].unshift({
-                    receivedTime: ko.observable(date.today() + " @ " + date.timeNow()),
-                    message: ko.observable(event.data)
+                var buffer = self.messages.slice(0);
+                var first = buffer.shift();
+                buffer.unshift({
+                    sentTime: ko.observable(first.sentTime()),
+                    quote: ko.observable(first.quote()),
+                    pending: ko.observable(false),
+                    received: ko.observable(true),
+                    receivedTime: ko.observable(new Date().currentDateAndTime()),
+                    score: ko.observable(event.data)
                 });
-                self.showConsumerMessages(true);
+                self.messages([]);
+                self.messages(buffer);
             }
             self.messages = ko.observableArray();
             self.showMessages = ko.observable(false);
@@ -160,15 +165,13 @@
             }
 
             self.clickSend = function() {
-                var date = new Date();
                 self.messages.unshift({
-                    sentTime: ko.observable(date.today() + " @ " + date.timeNow()),
-                    producerTopic: ko.observable(self.producerTopic()),
+                    sentTime: ko.observable(new Date().currentDateAndTime()),
                     quote: ko.observable(self.quote()),
                     pending: ko.observable(true),
                     received: ko.observable(false),
-                    receivedTime: ko.observable(""),
-                    score: ko.observable("")
+                    receivedTime: ko.observable(),
+                    score: ko.observable()
                 });
                 self.showMessages(true);
                 self.producerWebSocket.send(self.producerTopic() + ';' + self.quote())
