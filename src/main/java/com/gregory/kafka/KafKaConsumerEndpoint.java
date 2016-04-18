@@ -25,7 +25,6 @@ public final class KafKaConsumerEndpoint {
 
     private static final ExecutorService executorService = Executors.newCachedThreadPool();
     private final Properties consumerProperties;
-    private ConsumerConnector connector;
     private Session session;
     private Async remoteEndpoint;
 
@@ -46,16 +45,7 @@ public final class KafKaConsumerEndpoint {
     @OnMessage
     public void incoming(String topic) throws Exception {
         System.out.println(topic);
-        this.connector = createJavaConsumerConnector(new ConsumerConfig(consumerProperties));
-
-        Map<String, Integer> topicCountMap = new HashMap<>();
-        topicCountMap.put(topic, 1);
-        Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = connector.createMessageStreams(topicCountMap);
-
-        final List<KafkaStream<byte[], byte[]>> streams = consumerMap.get(topic);
-        for (KafkaStream<byte[], byte[]> stream : streams) {
-            executorService.submit(new KafkaConsumerTask(stream, remoteEndpoint));
-        }
+        executorService.submit(new KafkaConsumerTask(topic, remoteEndpoint, consumerProperties));
     }
 
     @OnError
@@ -63,19 +53,30 @@ public final class KafKaConsumerEndpoint {
     }
 
     static public class KafkaConsumerTask implements Runnable {
-        private KafkaStream stream;
-        private Async remoteEndpoint;
+        private final String topic;
+        private final Async remoteEndpoint;
+        private final Properties consumerProperties;
 
-        public KafkaConsumerTask(KafkaStream stream, Async remoteEndpoint) {
-            this.stream = stream;
+        public KafkaConsumerTask(String topic, Async remoteEndpoint, Properties consumerProperties) {
+            this.topic = topic;
             this.remoteEndpoint = remoteEndpoint;
+            this.consumerProperties = consumerProperties;
         }
 
         @Override
         public void run() {
-            ConsumerIterator<byte[], byte[]> iterator = stream.iterator();
-            while(iterator.hasNext()) {
-                sendText(iterator.next().message());
+            while (true) {
+                ConsumerConnector connector = createJavaConsumerConnector(new ConsumerConfig(consumerProperties));
+
+                Map<String, Integer> topicCountMap = new HashMap<>();
+                topicCountMap.put(topic, 1);
+                Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = connector.createMessageStreams(topicCountMap);
+
+                KafkaStream<byte[], byte[]> stream = consumerMap.get(topic).get(0);
+                ConsumerIterator<byte[], byte[]> iterator = stream.iterator();
+                while (iterator.hasNext()) {
+                    sendText(iterator.next().message());
+                }
             }
         }
 
